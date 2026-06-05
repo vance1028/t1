@@ -106,6 +106,15 @@ CREATE TABLE IF NOT EXISTS hazard_report (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS "user" (
+    id VARCHAR(36) PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    hashed_password VARCHAR(200) NOT NULL,
+    display_name VARCHAR(50),
+    role VARCHAR(20) DEFAULT 'admin',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
 INSERT INTO section (id, name, seq_no, description) VALUES
 ('10000000-0000-0000-0000-000000000001', 'A1', 1, 'A1标段综合管廊'),
 ('10000000-0000-0000-0000-000000000002', 'A2', 2, 'A2标段综合管廊'),
@@ -299,3 +308,5 @@ INSERT INTO inspection_order (id, inspector_id, compartment_ids, check_items, st
 ('90000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000001', ARRAY['20000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000002'], '检查电缆温度、巡检配电柜、确认通风设备运行状态', 'pending', NOW() + INTERVAL '1 day', NOW() + INTERVAL '1 day 2 hours', NOW()),
 ('90000000-0000-0000-0000-000000000002', '80000000-0000-0000-0000-000000000002', ARRAY['20000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000006'], '检查燃气管线接口、确认气体检测器工作正常、巡检排水系统', 'in_progress', NOW() - INTERVAL '1 hour', NOW() + INTERVAL '1 hour', NOW()),
 ('90000000-0000-0000-0000-000000000003', '80000000-0000-0000-0000-000000000003', ARRAY['20000000-0000-0000-0000-000000000007', '20000000-0000-0000-0000-000000000009'], '检查综合舱支架、确认水位监测设备、巡检消防设施', 'completed', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '1 hour', NOW());
+
+INSERT INTO "user" (id, username, hashed_password, display_name, role) VALUES ('90000000-0000-0000-0000-000000000001', 'admin', '$2b$12$3fyiGO89Q/BAvFAVApEwUedvVycr3shOf52e447byCIv2raFS6iI.', '系统管理员', 'admin');

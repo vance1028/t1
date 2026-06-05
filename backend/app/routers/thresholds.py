@@ -16,6 +16,7 @@ async def get_thresholds(db: AsyncSession = Depends(get_db)):
 
 
 @router.put("/{threshold_id}", response_model=ThresholdConfigOut)
+@router.patch("/{threshold_id}", response_model=ThresholdConfigOut)
 async def update_threshold(
     threshold_id: str,
     body: ThresholdConfigUpdate,

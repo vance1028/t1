@@ -2,7 +2,7 @@ import asyncio
 import uuid
 import json
 from datetime import datetime, timezone
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import async_session
@@ -10,6 +10,7 @@ from app.models import SensorReading, Compartment
 from app.simulator import SensorSimulator
 from app.alarm_engine import AlarmEngine
 from app.interlock_executor import InterlockExecutor
+from app.auth import verify_token
 
 router = APIRouter()
 
@@ -128,7 +129,11 @@ async def _sensor_loop():
 
 
 @router.websocket("/sensor-data")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, token: str = Query(default=None)):
+    if not token or not verify_token(token):
+        await websocket.close(code=4001, reason="Unauthorized")
+        return
+
     await _init_components()
 
     global background_task

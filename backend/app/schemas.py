@@ -137,6 +137,10 @@ class InspectionOrderCreate(BaseModel):
     scheduled_end: Optional[datetime] = None
 
 
+class InspectionStatusUpdate(BaseModel):
+    status: str
+
+
 class CheckinCreate(BaseModel):
     inspector_id: str
     compartment_id: str
@@ -206,3 +210,21 @@ class WSInterlockEvent(BaseModel):
 
 
 WSMessage = Union[WSSensorData, WSAlarmEvent, WSInterlockEvent]
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class UserOut(BaseModel):
+    id: str
+    username: str
+    display_name: Optional[str] = None
+    role: str = "admin"
+    model_config = {"from_attributes": True}
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str

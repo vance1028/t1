@@ -1,11 +1,12 @@
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, text
 from app.database import engine, async_session, Base
 from app.models import Section
-from app.routers import sections, compartments, alarms, interlock_logs, inspections, thresholds, inspectors, websocket
+from app.routers import sections, compartments, alarms, interlock_logs, inspections, thresholds, inspectors, websocket, auth
+from app.auth import get_current_user
 
 
 async def _init_db():
@@ -69,14 +70,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(sections.router, prefix="/api/sections", tags=["标段管理"])
-app.include_router(compartments.router, prefix="/api/compartments", tags=["舱室管理"])
-app.include_router(alarms.router, prefix="/api/alarms", tags=["告警管理"])
-app.include_router(interlock_logs.router, prefix="/api/interlock-logs", tags=["联动日志"])
-app.include_router(inspections.router, prefix="/api/inspections", tags=["巡检管理"])
-app.include_router(thresholds.router, prefix="/api/thresholds", tags=["阈值配置"])
-app.include_router(inspectors.router, prefix="/api/inspectors", tags=["巡检人员"])
+app.include_router(sections.router, prefix="/api/sections", tags=["标段管理"], dependencies=[Depends(get_current_user)])
+app.include_router(compartments.router, prefix="/api/compartments", tags=["舱室管理"], dependencies=[Depends(get_current_user)])
+app.include_router(alarms.router, prefix="/api/alarms", tags=["告警管理"], dependencies=[Depends(get_current_user)])
+app.include_router(interlock_logs.router, prefix="/api/interlock-logs", tags=["联动日志"], dependencies=[Depends(get_current_user)])
+app.include_router(inspections.router, prefix="/api/inspections", tags=["巡检管理"], dependencies=[Depends(get_current_user)])
+app.include_router(thresholds.router, prefix="/api/thresholds", tags=["阈值配置"], dependencies=[Depends(get_current_user)])
+app.include_router(inspectors.router, prefix="/api/inspectors", tags=["巡检人员"], dependencies=[Depends(get_current_user)])
 app.include_router(websocket.router, prefix="/ws", tags=["WebSocket"])
+app.include_router(auth.router, prefix="/api/auth", tags=["认证"])
 
 
 @app.get("/api/health")

@@ -9,6 +9,7 @@ from app.models import InspectionOrder, CheckinRecord, HazardReport
 from app.schemas import (
     InspectionOrderOut,
     InspectionOrderCreate,
+    InspectionStatusUpdate,
     CheckinCreate,
     CheckinOut,
     HazardCreate,
@@ -76,12 +77,13 @@ async def create_inspection(
 
 
 @router.put("/{order_id}/status", response_model=InspectionOrderOut)
+@router.patch("/{order_id}/status", response_model=InspectionOrderOut)
 async def update_inspection_status(
     order_id: str,
-    status: str,
+    body: InspectionStatusUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    if status not in ("pending", "in_progress", "completed"):
+    if body.status not in ("pending", "in_progress", "completed", "cancelled"):
         raise HTTPException(status_code=400, detail="无效状态值")
 
     result = await db.execute(
@@ -91,7 +93,7 @@ async def update_inspection_status(
     if not order:
         raise HTTPException(status_code=404, detail="巡检工单不存在")
 
-    order.status = status
+    order.status = body.status
     await db.commit()
     await db.refresh(order)
     return order

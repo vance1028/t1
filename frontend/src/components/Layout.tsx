@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import { Shield, Bell, ClipboardList, Settings, ChevronLeft, ChevronRight, Wifi, WifiOff } from 'lucide-react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Shield, Bell, ClipboardList, Settings, ChevronLeft, ChevronRight, Wifi, WifiOff, LogOut, User } from 'lucide-react';
 import { useAlarmStore } from '@/store/alarmStore';
+import { useAuthStore } from '@/store/authStore';
 import AlarmBanner from './AlarmBanner';
 
 const navItems = [
@@ -25,6 +26,14 @@ export default function Layout({ wsConnected }: LayoutProps) {
     : activeAlarms.some((a) => a.alarm_level === 1)
     ? 1
     : 0;
+  const username = useAuthStore((s) => s.username);
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className="flex h-full">
@@ -84,14 +93,31 @@ export default function Layout({ wsConnected }: LayoutProps) {
         </nav>
 
         <div className="border-t border-tunnel-border p-3">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            {wsConnected ? (
-              <Wifi className="w-4 h-4 text-safe" />
-            ) : (
-              <WifiOff className="w-4 h-4 text-alarm-3" />
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-xs text-gray-500 min-w-0">
+              {wsConnected ? (
+                <Wifi className="w-4 h-4 text-safe flex-shrink-0" />
+              ) : (
+                <WifiOff className="w-4 h-4 text-alarm-3 flex-shrink-0" />
+              )}
+              {!collapsed && <span className="truncate">{wsConnected ? '实时连接' : '连接断开'}</span>}
+            </div>
+            {!collapsed && username && (
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 flex-shrink-0">
+                <User className="w-3.5 h-3.5" />
+                <span className="truncate max-w-[60px]">{username}</span>
+              </div>
             )}
-            {!collapsed && <span>{wsConnected ? '实时连接' : '连接断开'}</span>}
           </div>
+          {username && (
+            <button
+              onClick={handleLogout}
+              className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-alarm-3 border border-tunnel-border rounded-md py-1.5 transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              {!collapsed && <span>退出登录</span>}
+            </button>
+          )}
         </div>
 
         <button

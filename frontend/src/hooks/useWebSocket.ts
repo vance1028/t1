@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { WSMessage } from '@/types';
 import { useSensorStore } from '@/store/sensorStore';
 import { useAlarmStore } from '@/store/alarmStore';
+import { useAuthStore } from '@/store/authStore';
 
 export function useWebSocket() {
   const [connected, setConnected] = useState(false);
@@ -15,10 +16,16 @@ export function useWebSocket() {
   const alarmsRef = useRef(alarms);
   alarmsRef.current = alarms;
 
+  const token = useAuthStore((s) => s.token);
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+
   useEffect(() => {
+    if (!token) return;
+
     const connect = () => {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws/sensor-data`;
+      const wsUrl = `${protocol}//${window.location.host}/ws/sensor-data?token=${tokenRef.current ?? ''}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -69,7 +76,7 @@ export function useWebSocket() {
         wsRef.current.close();
       }
     };
-  }, [updateFromWS, applyAlarms, addAlarm]);
+  }, [updateFromWS, applyAlarms, addAlarm, token]);
 
   return { connected };
 }
